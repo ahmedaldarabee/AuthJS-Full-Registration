@@ -1,0 +1,201 @@
+"use client";
+
+import Link from "next/link";
+import React, { useState } from "react";
+import { FaGithub, FaGoogle } from "react-icons/fa";
+import { loginSchemaValidation , registerSchemaValidation} from "@/utils/Validations";
+import ToastMessage from "@/components/Toast/ToastMessage";
+import SpinnerLoader from "@/components/Spinner/spinnerLoader";
+import { LoginAction } from "@/actions/authActions/Login/auth.action";
+import { RegisterAction } from "@/actions/authActions/Register/auth.action";
+import { MdOutlineLogin } from "react-icons/md";
+
+interface FormProps {
+  FormType: "Login" | "Register";
+}
+
+interface validationProcessProps {
+  email:string;
+  username?:string;
+  password: string | number | any;
+}
+
+const Form = React.memo(({ FormType }: FormProps) => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
+  
+  const [clientErrors, setClientErrors] = useState<string[]>([]);
+  const [serverErrors, setServerErrors] = useState<string[] | string>([]);
+  const [serverSuccess, setServerSuccess] = useState<string[] | string | any>('');
+
+  const [submitCount, setSubmitCount] = useState(0);
+  const [loading,setLoading] = useState<boolean>(false);
+
+  const onFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setClientErrors([]); 
+    setSubmitCount(prev => prev + 1); 
+    validationProcess({ email, password, username });
+  };
+
+  const validationProcess = async ({ email, username = '', password }: validationProcessProps) => {
+    setLoading(true);
+    try {
+      let result;
+
+      if (FormType === "Login") {
+        result = loginSchemaValidation.safeParse({ email, password });
+        await LoginAction({ email, password }).then((resultOfServer) => {
+          // if(resultOfServer?.error) setServerErrors(resultOfServer?.error);
+          // if(resultOfServer?.success) setServerSuccess(resultOfServer?.success);
+          if(resultOfServer){
+            resetInputs();
+            setServerSuccess(resultOfServer.message);
+          }else{
+            setServerSuccess("");
+          }
+        });
+       
+      } else {
+        result = registerSchemaValidation.safeParse({ email, username, password });
+        await RegisterAction({ email, password , username }).then((resultOfServer) => {
+          if(resultOfServer.success){
+            resetInputs();
+            setServerSuccess(resultOfServer.message);
+          }else{
+            setServerSuccess("");
+            setServerErrors(resultOfServer.message);
+          }
+        });
+
+      }
+
+      if (!result.success) {
+        setClientErrors(result.error.issues.map(issue => issue.message));
+      }
+    } catch (error) {
+      console.error("Auth process error:", error);
+      setClientErrors(["An unexpected error occurred. Please try again."]);
+    } finally {
+      setLoading(false);
+      resetInputs();
+    }
+  };
+
+  const resetInputs = () => {
+    setServerErrors([]);
+    setClientErrors([]);
+    setEmail("");
+    setPassword("");
+    setUsername("");
+  };
+
+  return (
+    <div className="bg-white border border-slate-300 text-gray-500 max-w-96 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10">
+      <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800 cursor-pointer">
+        {FormType === "Login" ? "Welcome back" : "Create New Account"}
+      </h2>
+
+
+      {(clientErrors || serverErrors).map((error, index) => (
+        <ToastMessage 
+          key={`${submitCount}-${index}`} 
+          message={error} 
+          messageType="error" 
+        />
+      ))}
+
+      {
+        serverSuccess &&
+          <ToastMessage
+           message={serverSuccess}
+           messageType="success"
+          />
+      }
+
+      <form onSubmit={onFormSubmit}>
+
+        {FormType === "Register" && (
+          <input
+            id="username"
+            className="w-full bg-transparent border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
+            type="text"
+            placeholder="Enter your name"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        )}
+        <input
+          id="email"
+          className="w-full bg-transparent border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          id="password"
+          className="w-full bg-transparent border mt-1 mb-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
+          type="password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <div className="text-right py-4">
+          <Link href="#" className="text-blue-600 underline">
+            Forgot Password
+          </Link>
+        </div>
+
+        <button
+          disabled={loading}
+          type="submit"
+          className="flex items-center justify-center gap-2 disabled:bg-indigo-900 disabled:pointer-events-none w-full mb-3 bg-indigo-500 py-2.5 rounded-full text-white cursor-pointer"
+        >
+          { loading ? <SpinnerLoader /> : FormType === "Login" ? "Log in" : "Register" }
+          { loading ? null : <MdOutlineLogin size={21} /> }
+        </button>
+      </form>
+
+
+      <p className={`text-center mt-4`}>
+        {FormType === "Register" ? "Go to " : " Don’t have an account? "}
+
+        <Link
+          href={FormType === "Register" ? "/login" : "/register"}
+          className="text-blue-500 underline"
+        >
+          {FormType === "Login" ? "Register" : "Login"}
+        </Link>
+      </p>
+
+      <button
+        type="button"
+        className="w-full flex items-center gap-2 justify-center mt-5 bg-black py-2.5 rounded-full text-white cursor-pointer"
+      >
+        <FaGithub className="w-4 h-4" />
+        Log in with Github
+      </button>
+
+      <button
+        type="button"
+        className="cursor-pointer w-full flex items-center gap-2 justify-center my-3 bg-white border border-gray-500/30 py-2.5 rounded-full text-gray-800"
+      >
+        <FaGoogle className="w-4 h-4" />
+        Log in with Apple
+      </button>
+
+      <Link
+        className="w-full flex items-start justify-center capitalize text-xs hover:text-black hover:scale-105 transition-all duration-200"
+        href={"/"}
+      >
+        back to home
+      </Link>
+    </div>
+  );
+});
+
+export default Form;

@@ -8,10 +8,44 @@ datasource db {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  username  String
-  email     String  @unique
-  followers Int     @default(1)
-  IsActive  Boolean @default(true)
-  RegisterAt DateTime @default(now())
+  id            String    @id @default(cuid())
+  username      String?
+  email         String?   @unique
+  password      String?
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  accounts      Account[]
+
+  @@map("users")
 }
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// Next Auth Notes:
+
+// - no password [ where be as optional in the schema, because we want to enable user to register by google, github and another OAuth Providers ... ]
+
+// - @map in postgres: [ like a middle ware that recive think then processed | convert it into anther think to be worked successfully with next part ! ]
+
+// generate and [ db push ] in prisma -> that convert these models into database tables
+
+// Name Convention:
+//  providerAccountId  [ This part that used in code to be worked with Js and TS ] String  @map("provider_account_id") [ This part that used in database ]
