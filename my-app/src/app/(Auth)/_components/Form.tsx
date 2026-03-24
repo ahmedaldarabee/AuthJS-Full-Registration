@@ -2,23 +2,14 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
-import { FaGithub, FaGoogle } from "react-icons/fa";
 import { loginSchemaValidation , registerSchemaValidation} from "@/utils/Validations";
 import ToastMessage from "@/components/Toast/ToastMessage";
 import SpinnerLoader from "@/components/Spinner/spinnerLoader";
 import { LoginAction } from "@/actions/authActions/Login/auth.action";
 import { RegisterAction } from "@/actions/authActions/Register/auth.action";
 import { MdOutlineLogin } from "react-icons/md";
-
-interface FormProps {
-  FormType: "Login" | "Register";
-}
-
-interface validationProcessProps {
-  email:string;
-  username?:string;
-  password: string | number | any;
-}
+import { FormProps, validationProcessProps } from "@/types/Form/Form";
+import MediaProvider from "./MediaProvider";
 
 const Form = React.memo(({ FormType }: FormProps) => {
   const [email, setEmail] = useState<string>("");
@@ -47,13 +38,8 @@ const Form = React.memo(({ FormType }: FormProps) => {
       if (FormType === "Login") {
         result = loginSchemaValidation.safeParse({ email, password });
         await LoginAction({ email, password }).then((resultOfServer) => {
-          // if(resultOfServer?.error) setServerErrors(resultOfServer?.error);
-          // if(resultOfServer?.success) setServerSuccess(resultOfServer?.success);
-          if(resultOfServer){
-            resetInputs();
-            setServerSuccess(resultOfServer.message);
-          }else{
-            setServerSuccess("");
+          if(resultOfServer?.success){
+            setServerErrors(resultOfServer?.message);
           }
         });
        
@@ -172,21 +158,7 @@ const Form = React.memo(({ FormType }: FormProps) => {
         </Link>
       </p>
 
-      <button
-        type="button"
-        className="w-full flex items-center gap-2 justify-center mt-5 bg-black py-2.5 rounded-full text-white cursor-pointer"
-      >
-        <FaGithub className="w-4 h-4" />
-        Log in with Github
-      </button>
-
-      <button
-        type="button"
-        className="cursor-pointer w-full flex items-center gap-2 justify-center my-3 bg-white border border-gray-500/30 py-2.5 rounded-full text-gray-800"
-      >
-        <FaGoogle className="w-4 h-4" />
-        Log in with Apple
-      </button>
+      <MediaProvider/>
 
       <Link
         className="w-full flex items-start justify-center capitalize text-xs hover:text-black hover:scale-105 transition-all duration-200"

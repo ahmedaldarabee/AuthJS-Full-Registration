@@ -1,5 +1,7 @@
 "use server"
 
+// server actions
+
 import { prisma } from "@/prisma/client"
 import { registerSchemaValidation } from "@/utils/Validations"
 import z, { success } from "zod"
