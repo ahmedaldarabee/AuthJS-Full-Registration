@@ -9,12 +9,15 @@ datasource db {
 
 model User {
   id            String    @id @default(cuid())
+  name          String?
   username      String?
   email         String?   @unique
   password      String?
   emailVerified DateTime? @map("email_verified")
   image         String?
   accounts      Account[]
+  sessions      Session[]
+  Authenticator Authenticator[]
 
   @@map("users")
 }
@@ -37,6 +40,40 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  provider             String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Next Auth Notes:

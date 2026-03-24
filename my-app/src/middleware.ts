@@ -5,7 +5,10 @@ import NextAuth from "next-auth";
 const authRoutes = ["/login","/register"];
 const protectedRoutes = ["/profile"];
 
-const {auth: proxy} = NextAuth(authConfig);
+const {auth: proxy} = NextAuth({
+    ...authConfig,
+    secret: process.env.AUTH_SECRET,
+});
 
 export default proxy((request) => {
     const { nextUrl } = request;
