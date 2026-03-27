@@ -2,14 +2,15 @@ import { LogoutAction } from "@/actions/authActions/Login/auth.action";
 import { auth } from "@/auth"
 import { CiLogout } from "react-icons/ci";
 
+
 const Profile = async () => {
     const session = await auth();
 
     return (
         <div className='w-full min-h-screen flex items-center justify-center text-center'>
-            <div className='flex items-start justify-center gap-4 flex-col'>
-                <p>{JSON.stringify(session)}</p>
-                <h2>Welcome <strong> { session?.user?.name || "ahmed al darabee" } </strong>  in profile page</h2>
+            <div className='w-full max-w-md flex items-center justify-center gap-4 flex-col mx-auto'>
+                <p className="">{JSON.stringify(session)}</p>
+                <h2>Welcome <strong> { session?.user?.username || "ahmed al darabee" } </strong>  in profile page</h2>
                 <p>your email: { session?.user?.email }</p>
                 
                 <form action={LogoutAction}>

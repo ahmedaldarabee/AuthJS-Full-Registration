@@ -17,15 +17,17 @@ const Form = React.memo(({ FormType }: FormProps) => {
   const [username, setUsername] = useState<string>("");
   
   const [clientErrors, setClientErrors] = useState<string[]>([]);
-  const [serverErrors, setServerErrors] = useState<string[] | string>([]);
-  const [serverSuccess, setServerSuccess] = useState<string[] | string | any>('');
+  const [serverErrors, setServerErrors] = useState<string>("");
+  const [serverSuccess, setServerSuccess] = useState<string>("");
+  const [loading,setLoading] = useState<boolean>(false);
 
   const [submitCount, setSubmitCount] = useState(0);
-  const [loading,setLoading] = useState<boolean>(false);
 
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setClientErrors([]); 
+    setServerErrors("");
+    setServerSuccess("");
     setSubmitCount(prev => prev + 1); 
     validationProcess({ email, password, username });
   };
@@ -37,24 +39,28 @@ const Form = React.memo(({ FormType }: FormProps) => {
 
       if (FormType === "Login") {
         result = loginSchemaValidation.safeParse({ email, password });
+        
         await LoginAction({ email, password }).then((resultOfServer) => {
           if(resultOfServer?.success){
-            setServerErrors(resultOfServer?.message);
+            clearFormFields();
+            setServerSuccess(resultOfServer?.message || "Login successful");
+          } else {
+            setServerErrors(resultOfServer?.message || "Invalid credentials");
           }
         });
        
       } else {
         result = registerSchemaValidation.safeParse({ email, username, password });
+        
         await RegisterAction({ email, password , username }).then((resultOfServer) => {
           if(resultOfServer.success){
-            resetInputs();
+            clearFormFields();
             setServerSuccess(resultOfServer.message);
           }else{
             setServerSuccess("");
             setServerErrors(resultOfServer.message);
           }
         });
-
       }
 
       if (!result.success) {
@@ -62,16 +68,12 @@ const Form = React.memo(({ FormType }: FormProps) => {
       }
     } catch (error) {
       console.error("Auth process error:", error);
-      setClientErrors(["An unexpected error occurred. Please try again."]);
     } finally {
       setLoading(false);
-      resetInputs();
     }
   };
 
-  const resetInputs = () => {
-    setServerErrors([]);
-    setClientErrors([]);
+  const clearFormFields = () => {
     setEmail("");
     setPassword("");
     setUsername("");
@@ -80,25 +82,17 @@ const Form = React.memo(({ FormType }: FormProps) => {
   return (
     <div className="bg-white border border-slate-300 text-gray-500 max-w-96 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10">
       <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800 cursor-pointer">
-        {FormType === "Login" ? "Welcome back" : "Create New Account"}
+        {FormType === "Login" ? "Welcome Back" : "Create New Account"}
       </h2>
 
 
-      {(clientErrors || serverErrors).map((error, index) => (
+      {[...clientErrors, ...(serverErrors ? [serverErrors] : [])].map((error, index) => (
         <ToastMessage 
           key={`${submitCount}-${index}`} 
           message={error} 
           messageType="error" 
         />
       ))}
-
-      {
-        serverSuccess &&
-          <ToastMessage
-           message={serverSuccess}
-           messageType="success"
-          />
-      }
 
       <form onSubmit={onFormSubmit}>
 
@@ -130,8 +124,8 @@ const Form = React.memo(({ FormType }: FormProps) => {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <div className="text-right py-4">
-          <Link href="#" className="text-blue-600 underline">
+        <div className="py-2 ps-3 pb-4">
+          <Link href="/forget-password" className={`${FormType === "Register" ? "hidden":"text-blue-600 underline"}`}>
             Forgot Password
           </Link>
         </div>
@@ -139,7 +133,7 @@ const Form = React.memo(({ FormType }: FormProps) => {
         <button
           disabled={loading}
           type="submit"
-          className="flex items-center justify-center gap-2 disabled:bg-indigo-900 disabled:pointer-events-none w-full mb-3 bg-indigo-500 py-2.5 rounded-full text-white cursor-pointer"
+          className="flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:pointer-events-none w-full mb-3 bg-sky-600 hover:bg-sky-700 transition-all duration-300 py-2.5 rounded-full text-white cursor-pointer"
         >
           { loading ? <SpinnerLoader /> : FormType === "Login" ? "Log in" : "Register" }
           { loading ? null : <MdOutlineLogin size={21} /> }
@@ -166,6 +160,14 @@ const Form = React.memo(({ FormType }: FormProps) => {
       >
         back to home
       </Link>
+      
+      {
+        serverSuccess &&
+          <ToastMessage
+           message={serverSuccess}
+           messageType="success"
+          />
+      }
     </div>
   );
 });
