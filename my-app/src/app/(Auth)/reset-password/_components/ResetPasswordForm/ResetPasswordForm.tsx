@@ -22,17 +22,22 @@ const ResetPasswordForm = () => {
     const onFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setClientErrors("");
+        setServerErrors("");
+        setServerSuccess("");
 
         try {
 
             const validation = resetPasswordSchemaValidation.safeParse({newPassword});
 
             if(!validation.success || newPassword !== confirmNewPassword){
-                return setClientErrors("Enter corrected password");
+                setLoading(false);
+                return setClientErrors("Please ensure passwords are correct and match each other.");
             }
 
             if(!searchToken){
-                return setClientErrors("Sorry , there is no token for you!");
+                setLoading(false);
+                return setClientErrors("Token is missing or invalid.");
             }
             
             // why after user add own data like new password and confirm passowrd correctly and matched each other, it doesn't clear the inputs?

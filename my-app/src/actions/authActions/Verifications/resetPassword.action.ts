@@ -2,12 +2,12 @@
 
 import { resetPasswordSchemaType, resetPasswordSchemaValidation } from "@/utils/Validations"
 import { prisma } from "@/prisma/client"
-import bcrypt from "bcryptjs";
+import * as bcrypt from "bcryptjs";
 
 export const resetPasswordAction = async(props: resetPasswordSchemaType, token: string) => {
     try {
         
-        const Validations = resetPasswordSchemaValidation.safeParse({props});
+        const Validations = resetPasswordSchemaValidation.safeParse(props);
 
         if(!Validations.success){
             return {success:false,message:"Enter corrected password"}
