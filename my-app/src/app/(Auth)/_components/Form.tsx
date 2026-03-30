@@ -16,10 +16,15 @@ const Form = React.memo(({ FormType }: FormProps) => {
   const [password, setPassword] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   
-  const [clientErrors, setClientErrors] = useState<string[]>([]);
+  const [clientErrors, setClientErrors] = useState<string[] | string>([]);
   const [serverErrors, setServerErrors] = useState<string>("");
   const [serverSuccess, setServerSuccess] = useState<string>("");
   const [loading,setLoading] = useState<boolean>(false);
+
+
+  // for handling code
+  const [showTwoStep,setShowTwoStep] = useState(false);
+  const [code,setCode] = useState("");
 
   const [submitCount, setSubmitCount] = useState(0);
 
@@ -38,14 +43,19 @@ const Form = React.memo(({ FormType }: FormProps) => {
       let result;
 
       if (FormType === "Login") {
-        result = loginSchemaValidation.safeParse({ email, password });
+        result = loginSchemaValidation.safeParse({ email, password , code});
         
-        await LoginAction({ email, password }).then((resultOfServer) => {
+        await LoginAction({ email, password,code }).then((resultOfServer) => {
           if(resultOfServer?.success){
-            clearFormFields();
+            setClientErrors("");
+            setServerErrors("");
             setServerSuccess(resultOfServer?.message || "Login successful");
           } else {
             setServerErrors(resultOfServer?.message || "Invalid credentials");
+          }
+
+          if(resultOfServer.twoStep){
+            setShowTwoStep(true);
           }
         });
        
@@ -106,23 +116,38 @@ const Form = React.memo(({ FormType }: FormProps) => {
             onChange={(e) => setUsername(e.target.value)}
           />
         )}
-        <input
-          id="email"
-          className="w-full bg-transparent border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
 
-        <input
-          id="password"
-          className="w-full bg-transparent border mt-1 mb-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        {
+          showTwoStep ? <>
+              <input
+                id="code"
+                className="w-full bg-transparent border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
+                type="text"
+                placeholder="Enter your verification code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+              />
+          </>:<>
+          
+            <input
+              id="email"
+              className="w-full bg-transparent border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+    
+            <input
+              id="password"
+              className="w-full bg-transparent border mt-1 mb-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </>
+        }
 
         <div className="py-2 ps-3 pb-4">
           <Link href="/forget-password" className={`${FormType === "Register" ? "hidden":"text-blue-600 underline"}`}>
@@ -135,7 +160,7 @@ const Form = React.memo(({ FormType }: FormProps) => {
           type="submit"
           className="flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:pointer-events-none w-full mb-3 bg-sky-600 hover:bg-sky-700 transition-all duration-300 py-2.5 rounded-full text-white cursor-pointer"
         >
-          { loading ? <SpinnerLoader /> : FormType === "Login" ? "Log in" : "Register" }
+          { loading ? <SpinnerLoader /> : FormType === "Login" ? showTwoStep ? "Confirm the code" : "Login" : "Register" }
           { loading ? null : <MdOutlineLogin size={21} /> }
         </button>
       </form>

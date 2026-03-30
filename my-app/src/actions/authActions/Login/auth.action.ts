@@ -2,8 +2,8 @@
 
 import { signIn, signOut } from "@/auth";
 import { prisma } from "@/prisma/client";
-import { sendVerificationEmail } from "@/utils/Email/mail";
-import { generateVerificationToken } from "@/utils/generateToken";
+import { sendTwoStepTokenCode, sendVerificationEmail } from "@/utils/Email/mail";
+import { generateTwoStepToken, generateVerificationToken } from "@/utils/generateToken";
 import { loginSchemaValidation } from "@/utils/Validations"
 import { AuthError } from "next-auth";
 import z from "zod"
@@ -17,8 +17,7 @@ export const LoginAction = async (data: z.infer<typeof loginSchemaValidation>) =
         }
     }
 
-    const {email, password} = result.data;
-
+    const {email, password,code} = result.data;
     
     try {
         const user = await prisma.user.findUnique({where: {email}});
@@ -41,6 +40,54 @@ export const LoginAction = async (data: z.infer<typeof loginSchemaValidation>) =
 
             return {
                 success:true, message: "Please verify your email!"
+            }
+        }
+        
+        // here we want to code to user email
+
+        if(user.email && user.isTwoStepEnabled){
+            // if user received the code, good, else generate the code
+            if(code){
+
+                const twoStepTokenFromDB = await prisma.twoStepToken.findFirst({where: { email: user.email }});
+                const isExpired = new Date(twoStepTokenFromDB?.expire!) < new Date();
+
+                if(!twoStepTokenFromDB || isExpired){
+                    return { success:false, message: "Invalid Token" }
+                }
+
+                if(twoStepTokenFromDB.token !== code){
+                    return { success:false, message: "Invalid Code" }
+                }
+
+                // if entered code and token are corrected, now we will enable user to login
+
+                await prisma.twoStepToken.delete({
+                    where: { 
+                        id:twoStepTokenFromDB.id
+                    }
+                });
+
+                const twoStepConfirmation = await prisma.twoStepConfirmation.findUnique({
+                    where: {
+                        userId: user.id
+                    }
+                });
+
+                if(twoStepConfirmation){
+                    await prisma?.twoStepConfirmation?.delete({where:{id: twoStepConfirmation.id}});
+                }
+                
+                await prisma.twoStepConfirmation.create({
+                    data: {
+                        userId: user.id
+                    }
+                })
+
+            }else{
+                const twoStepCode = await generateTwoStepToken(user.email);
+                 await sendTwoStepTokenCode(user.email,twoStepCode.token); // token that be code
+                return { success:true,message:"Confirmation code is sent into your email", twoStep:true }
             }
         }
         

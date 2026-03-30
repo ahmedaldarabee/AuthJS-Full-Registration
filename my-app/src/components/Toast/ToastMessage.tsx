@@ -9,8 +9,10 @@ interface ToastMessageProps {
 }
 
 const ToastMessage = ({ messageType, message }: ToastMessageProps) => {
+    const lastFiredRef = useRef<string | null>(null);
+
     useEffect(() => {
-        if (message) {
+        if (message && lastFiredRef.current !== message) {
             const config = {
                 duration: 4000,
                 progress: true,
@@ -25,6 +27,7 @@ const ToastMessage = ({ messageType, message }: ToastMessageProps) => {
             } else {
                 showToast.error(message, config);
             }
+            lastFiredRef.current = message;
         }
     }, [messageType, message]);
 

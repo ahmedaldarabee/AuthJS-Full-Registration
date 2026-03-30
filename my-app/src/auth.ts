@@ -28,6 +28,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         
         if(user){
           session.user.role = user.role
+          session.user.username = user.username || "Anonymous";
+          session.user.isTwoStepEnabled = user.isTwoStepEnabled || false;
         }
       }
       return session;
@@ -43,6 +45,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if(!userFromDB?.emailVerified){
         return false; // avoid enable user to login if own email doesn't verified!
       }
+
+      if(userFromDB.isTwoStepEnabled){
+          // Why we add next section:
+          const twoStepConfirmationModel = await prisma.twoStepConfirmation.findUnique({where:{userId: user.id}});
+          
+          // What the next section mean:
+          if(!twoStepConfirmationModel) return false;
+
+          await prisma.twoStepConfirmation.delete({
+            where: { id: twoStepConfirmationModel.id }
+          });
+      }
+
+      
 
       return true;
     }

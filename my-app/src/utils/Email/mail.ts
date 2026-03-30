@@ -66,3 +66,31 @@ export const sendPasswordReset = async (email:string,token: string) => {
         return { error: err.message || "Unknown mail error" };
     }
 }
+
+export const sendTwoStepTokenCode = async (email:string,token: string) => {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    try {
+        const { data, error } = await resend.emails.send({
+          from: 'onboarding@resend.dev', 
+          to: 'seahmednail@gmail.com',
+          subject: 'Two Step Auth Code - Next-Auth-Project',
+          html: `
+                <div style="font-family: sans-serif; padding: 20px; color: #333;">
+                    <h1 style="display: inline-block; padding: 10px 20px; background-color: #000; color: #fff; text-decoration: none; border-radius: 5px;"> Code: ${token} </h1>
+                </div>
+          `
+        });
+
+        if (error) {
+            console.error("Two Step Auth Code Error Response:", error);
+            return { error: error.message };
+        }
+
+        console.log("Two Step Auth Code To:", email, "Data:", data);
+        return { success: true, data };
+        
+    } catch (err: any) {
+        return { error: err.message || "Unknown mail error" };
+    }
+}

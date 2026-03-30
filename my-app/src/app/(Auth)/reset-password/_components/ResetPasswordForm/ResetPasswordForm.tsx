@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import React, { useState } from 'react'
 import { GrPowerReset } from "react-icons/gr";
+import { FaEye } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa";
 
 const ResetPasswordForm = () => {
     const searchToken = useSearchParams().get('token');
@@ -18,6 +20,11 @@ const ResetPasswordForm = () => {
     const [serverErrors, setServerErrors] = useState<string>("");
     const [serverSuccess, setServerSuccess] = useState<string>("");
     const [loading,setLoading] = useState<boolean>(false);
+
+
+    // show eye icon for password and confirm password
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
     const onFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,24 +76,46 @@ const ResetPasswordForm = () => {
                     Confirm Your Password
                 </h2>
 
-                <form onSubmit={onFormSubmit}>
+                <form onSubmit={onFormSubmit} className='relative'>
                     <input
                         id="password"
                         className="w-full bg-transparent border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                     />
+
+                    {
+                        showPassword ? 
+                        <> <FaEyeSlash 
+                        onClick={() => setShowPassword(false)}
+                        className='absolute top-6 right-4 cursor-pointer' size={20} /> </>
+                        : 
+                        <> <FaEye 
+                        onClick={() => setShowPassword(true)}
+                        className='absolute top-6 right-4 cursor-pointer' size={20} /> </>
+                    }
                     
                     <input
                         id="confirmNewPassword"
                         className="w-full bg-transparent border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
-                        type="password"
+                        type={showConfirmPassword ? "text" : "password"}
                         placeholder="confirm your password"
                         value={confirmNewPassword}
                         onChange={(e) => setConfirmNewPassword(e.target.value)}
                     />
+
+                    {
+                        showConfirmPassword ? 
+                        <> <FaEyeSlash 
+                            onClick={() => setShowConfirmPassword(false)}
+                            className='absolute top-22 right-4 cursor-pointer' size={20} /> </>
+                        : 
+                        <> <FaEye 
+                        onClick={() => setShowConfirmPassword(true)}
+                        className='absolute top-22 right-4 cursor-pointer' size={20} /> </>
+                    }
                     
                     <button
                         disabled={loading}
@@ -108,10 +137,7 @@ const ResetPasswordForm = () => {
 
                     { clientErrors && <ToastMessage message={clientErrors} messageType="error" /> }
                     { serverErrors && <ToastMessage message={serverErrors} messageType="error" /> }
-                    {/* 
-                        here, why after i reset the password the message doesn't show ? and when i access login to set new password,
-                        that show invalid signin
-                    */}
+                
                     { serverSuccess && <ToastMessage message={serverSuccess} messageType="success" /> }
 
                 </form>

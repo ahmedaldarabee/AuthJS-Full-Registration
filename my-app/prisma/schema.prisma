@@ -24,6 +24,11 @@ model User {
   image         String?
   accounts      Account[]
   role          Role  @default(USER)
+
+  // What and why the main target from next fields:
+  twoStepConfirmation TwoStepConfirmation?  // to access Two Step Confirmation Data where know the user that enable this feature
+  isTwoStepEnabled  Boolean @default(false) // that be if user enable 2FA or not !
+
   @@map("users")
 }
 
@@ -64,6 +69,23 @@ model ForgetPasswordToken{
   expire  DateTime
 
   @@unique([email,token])
+}
+
+model TwoStepToken{
+  id      String  @id @default(cuid())
+  email   String
+  token   String  @unique
+  expire  DateTime
+
+  @@unique([email,token])
+}
+
+model TwoStepConfirmation {
+  id      String  @id @default(cuid())
+  userId  String  @unique
+  user    User @relation(fields: [userId],references: [id],onDelete: Cascade) 
+  // that's mean: userId = id of user
+  // Cascade: that mean if user deleted delete this record of data from DB !
 }
 
 // - @map in postgres: [ like a middleware that receive think then processed | convert it into anther think to be worked successfully with next part ! ]

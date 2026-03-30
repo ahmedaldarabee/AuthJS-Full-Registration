@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import authConfig from "./auth.config";
 import NextAuth from "next-auth";
 
-const authRoutes = ["/login","/register"];
+const authRoutes = ["/login","/register","/verify","/forget-password","/reset-password"];
 const protectedRoutes = ["/profile"];
 
 const {auth: proxy} = NextAuth({
@@ -30,5 +30,5 @@ export default proxy((request) => {
 
 // the last middleware handler it will working for next matcher paths
 export const config = {
-    matcher: ["/login","/register","/profile"]
+    matcher: ["/login","/register","/profile","/verify","/forget-password","/reset-password"]
 }
