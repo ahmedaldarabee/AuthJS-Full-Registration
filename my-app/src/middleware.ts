@@ -31,9 +31,6 @@ export default proxy((request) => {
 
 
 // the last middleware handler it will working for next matcher paths
-// export const config = {
-//     matcher: ["/login","/register","/profile/:path/*","/verify","/forget-password","/reset-password"]
-// }
 
 export const config = {
     matcher: [

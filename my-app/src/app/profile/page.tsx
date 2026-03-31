@@ -34,16 +34,16 @@ const Profile = async () => {
                     </div>
                     
                     <form action={LogoutAction} className="w-full block space-y-4">
+                        <button type="submit" className="w-full  cursor-pointer flex justify-center items-center gap-2 hover:bg-sky-700 transition-all duration-200 bg-sky-500 py-1 px-4 rounded-md text-white">
+                            Logout
+                        </button>
+                    </form>
                     {
                         session?.user.id && 
                         <ToggleTwoStepAuth
                             userId={session?.user.id}
                             isTwoStepEnabled={session?.user.isTwoStepEnabled}/>
                     }
-                        <button type="submit" className="w-full  cursor-pointer flex justify-center items-center gap-2 hover:bg-sky-700 transition-all duration-200 bg-sky-500 py-1 px-4 rounded-md text-white">
-                            Logout
-                        </button>
-                    </form>
                </div>
                 
             </div>

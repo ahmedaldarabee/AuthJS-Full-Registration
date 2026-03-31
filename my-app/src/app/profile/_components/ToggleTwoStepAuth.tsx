@@ -53,11 +53,10 @@ const ToggleTwoStepAuth = ({userId,isTwoStepEnabled}:ToggleTwoStepAuthProps) => 
             htmlFor="toggleTwoStepAuth">Enable / disable two step authentication</label>
       </div>
 
-          <input 
-            type="submit"
-            value="Save"
-            className="block w-full transition-all duration-200 bg-sky-500 px-4 py-1 rounded-md text-white cursor-pointer hover:bg-sky-700"
-            />
+            <button
+              type="submit"
+              className="block w-full transition-all duration-200 bg-sky-500 px-4 py-1 rounded-md text-white cursor-pointer hover:bg-sky-700"
+            > Save </button>
           
           { serverSuccess && <ToastMessage message={serverSuccess} messageType="success" /> }
           { serverErrors && <ToastMessage message={serverErrors} messageType="error" /> }
