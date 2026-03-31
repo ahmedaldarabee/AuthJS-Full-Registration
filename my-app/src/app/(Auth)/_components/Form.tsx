@@ -34,10 +34,10 @@ const Form = React.memo(({ FormType }: FormProps) => {
     setServerErrors("");
     setServerSuccess("");
     setSubmitCount(prev => prev + 1); 
-    validationProcess({ email, password, username });
+    validationProcess({ email, password, username,code });
   };
 
-  const validationProcess = async ({ email, username = '', password }: validationProcessProps) => {
+  const validationProcess = async ({ email, username = '', password,code }: validationProcessProps) => {
     setLoading(true);
     try {
       let result;
@@ -90,7 +90,7 @@ const Form = React.memo(({ FormType }: FormProps) => {
   };
 
   return (
-    <div className="bg-white border border-slate-300 text-gray-500 max-w-96 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10">
+    <div className="w-full bg-white border border-slate-300 text-gray-500 max-w-96 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10">
       <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800 cursor-pointer">
         {FormType === "Login" ? "Welcome Back" : "Create New Account"}
       </h2>
@@ -119,14 +119,16 @@ const Form = React.memo(({ FormType }: FormProps) => {
 
         {
           showTwoStep ? <>
-              <input
-                id="code"
-                className="w-full bg-transparent border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
-                type="text"
-                placeholder="Enter your verification code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-              />
+              <div className="w-full flex items-center justify-center gap-2">
+                  <input
+                    id="code"
+                    className="w-full bg-transparent border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
+                    type="text"
+                    placeholder="Enter the verification code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                />
+              </div>
           </>:<>
           
             <input
@@ -149,7 +151,7 @@ const Form = React.memo(({ FormType }: FormProps) => {
           </>
         }
 
-        <div className="py-2 ps-3 pb-4">
+        <div className={`py-2 ps-3 pb-4 ${showTwoStep ? "hidden" : ""}`}>
           <Link href="/forget-password" className={`${FormType === "Register" ? "hidden":"text-blue-600 underline"}`}>
             Forgot Password
           </Link>
@@ -166,7 +168,8 @@ const Form = React.memo(({ FormType }: FormProps) => {
       </form>
 
 
-      <p className={`text-center mt-4`}>
+      <p className={`text-center mt-4 ${showTwoStep ? "hidden" : ""} `}>
+       
         {FormType === "Register" ? "Go to " : " Don’t have an account? "}
 
         <Link
@@ -177,7 +180,7 @@ const Form = React.memo(({ FormType }: FormProps) => {
         </Link>
       </p>
 
-      <MediaProvider/>
+      <MediaProvider isShowTwoStep={showTwoStep}/>
 
       <Link
         className="w-full flex items-start justify-center capitalize text-xs hover:text-black hover:scale-105 transition-all duration-200"

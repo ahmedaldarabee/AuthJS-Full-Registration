@@ -3,7 +3,7 @@ import authConfig from "./auth.config";
 import NextAuth from "next-auth";
 
 const authRoutes = ["/login","/register","/verify","/forget-password","/reset-password"];
-const protectedRoutes = ["/profile"];
+const protectedRoutes = ["/profile","/profile/edit"];
 
 const {auth: proxy} = NextAuth({
     ...authConfig,
@@ -16,7 +16,7 @@ export default proxy((request) => {
 
     // avoid access login and register pages
 
-    const isUserLoggedIn : boolean = Boolean(request.auth);
+    const isUserLoggedIn : boolean = Boolean(!!request.auth);
 
     if(isUserLoggedIn && authRoutes.includes(currentPath)){
         return NextResponse.redirect(new URL("/profile",nextUrl));
@@ -25,10 +25,24 @@ export default proxy((request) => {
     if(!isUserLoggedIn && protectedRoutes.includes(currentPath)){
         return NextResponse.redirect(new URL("/login",nextUrl));
     }
+
+    return NextResponse.next();
 })
 
 
 // the last middleware handler it will working for next matcher paths
+// export const config = {
+//     matcher: ["/login","/register","/profile/:path/*","/verify","/forget-password","/reset-password"]
+// }
+
 export const config = {
-    matcher: ["/login","/register","/profile","/verify","/forget-password","/reset-password"]
+    matcher: [
+        "/login",
+        "/register",
+        "/profile",
+        "/profile/:path*",
+        "/verify",
+        "/forget-password",
+        "/reset-password"
+    ]
 }

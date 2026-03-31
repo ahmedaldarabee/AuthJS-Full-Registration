@@ -45,7 +45,7 @@ export const generateTwoStepToken = async (email: string) => {
         await prisma.twoStepToken.delete({where:{ id:twoStepTokenModel.id }})
     }
 
-    const newTwoStepToken = await prisma.forgetPasswordToken.create({
+    const newTwoStepToken = await prisma.twoStepToken.create({
         data: {
             token: randomInt(100000,1000000).toString(),
             expire: new Date(new Date().getTime() + 3600 * 1000),

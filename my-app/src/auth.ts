@@ -28,8 +28,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         
         if(user){
           session.user.role = user.role
+          // session.user.role [ This data that exist client ] = user.role [ This data that exist in Database that be up-to-dates data that we needed to show it into session to show new data into client ]
           session.user.username = user.username || "Anonymous";
           session.user.isTwoStepEnabled = user.isTwoStepEnabled || false;
+          token.name = user.username;
         }
       }
       return session;

@@ -50,9 +50,14 @@ export const LoginAction = async (data: z.infer<typeof loginSchemaValidation>) =
             if(code){
 
                 const twoStepTokenFromDB = await prisma.twoStepToken.findFirst({where: { email: user.email }});
-                const isExpired = new Date(twoStepTokenFromDB?.expire!) < new Date();
+                
+                if(!twoStepTokenFromDB){
+                    return { success:false, message: "Invalid Token" }
+                }
 
-                if(!twoStepTokenFromDB || isExpired){
+                const isExpired = new Date(twoStepTokenFromDB.expire) < new Date();
+
+                if(isExpired){
                     return { success:false, message: "Invalid Token" }
                 }
 

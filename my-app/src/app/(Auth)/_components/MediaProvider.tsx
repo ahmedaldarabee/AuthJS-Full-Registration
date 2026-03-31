@@ -3,14 +3,18 @@ import { signIn } from 'next-auth/react'
 
 type ProvidersType = "github" | "google"
 
-const MediaProvider = () => {
+interface MediaProviderProps{
+    isShowTwoStep: boolean
+}
+
+const MediaProvider = ({isShowTwoStep}: MediaProviderProps) => {
   
     const signInProviderHandler = (provider : ProvidersType) => {
         signIn(provider,{redirectTo:"/profile"});
     }
 
     return (
-        <div>
+        <div className={`${isShowTwoStep ? "hidden" : ""}`}>
             <button
                 onClick={() => signInProviderHandler('github')}
                 type="button"

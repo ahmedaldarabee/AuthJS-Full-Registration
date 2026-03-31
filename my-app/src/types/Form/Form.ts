@@ -6,4 +6,5 @@ export interface validationProcessProps {
   email:string;
   username?:string;
   password: string | number | any;
+  code?:string;
 }
